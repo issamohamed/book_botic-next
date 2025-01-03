@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --maroon-100: #f2e1e1;
+  --maroon-200: #e5c3c3;
+  --maroon-300: #d8a5a5;
+  --maroon-400: #cb8787;
+  --maroon-500: #be6969;
+  --maroon-600: #b14b4b;
+  --maroon-700: #8f3c3c;
+  --maroon-800: #6d2e2e;
+  --maroon-900: #4b1f1f;
+}
+
+body {
+  color: var(--maroon-100);
+  background-color: var(--maroon-900);
+}
+
+@layer utilities {
+  .bg-maroon-100 { background-color: var(--maroon-100); }
+  .bg-maroon-200 { background-color: var(--maroon-200); }
+  .bg-maroon-300 { background-color: var(--maroon-300); }
+  .bg-maroon-400 { background-color: var(--maroon-400); }
+  .bg-maroon-500 { background-color: var(--maroon-500); }
+  .bg-maroon-600 { background-color: var(--maroon-600); }
+  .bg-maroon-700 { background-color: var(--maroon-700); }
+  .bg-maroon-800 { background-color: var(--maroon-800); }
+  .bg-maroon-900 { background-color: var(--maroon-900); }
+
+  .text-maroon-100 { color: var(--maroon-100); }
+  .text-maroon-200 { color: var(--maroon-200); }
+  .text-maroon-300 { color: var(--maroon-300); }
+  .text-maroon-400 { color: var(--maroon-400); }
+  .text-maroon-500 { color: var(--maroon-500); }
+  .text-maroon-600 { color: var(--maroon-600); }
+  .text-maroon-700 { color: var(--maroon-700); }
+  .text-maroon-800 { color: var(--maroon-800); }
+  .text-maroon-900 { color: var(--maroon-900); }
+
+  .border-maroon-100 { border-color: var(--maroon-100); }
+  .border-maroon-200 { border-color: var(--maroon-200); }
+  .border-maroon-300 { border-color: var(--maroon-300); }
+  .border-maroon-400 { border-color: var(--maroon-400); }
+  .border-maroon-500 { border-color: var(--maroon-500); }
+  .border-maroon-600 { border-color: var(--maroon-600); }
+  .border-maroon-700 { border-color: var(--maroon-700); }
+  .border-maroon-800 { border-color: var(--maroon-800); }
+  .border-maroon-900 { border-color: var(--maroon-900); }
+}
+
