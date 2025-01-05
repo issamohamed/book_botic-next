@@ -16,12 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${playfair.className} bg-maroon-900 min-h-screen text-white`}>
-        <div className="container mx-auto px-4 py-8">
+      <body className={`${inter.className} ${playfair.className}`}>
+        <div className="page-container">
           {children}
         </div>
       </body>
     </html>
   )
 }
-

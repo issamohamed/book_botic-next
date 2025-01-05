@@ -16,38 +16,33 @@
 
 body {
   color: var(--maroon-100);
-  background-color: var(--maroon-900);
+  background-image: url('/book_botic_wall.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
-@layer utilities {
-  .bg-maroon-100 { background-color: var(--maroon-100); }
-  .bg-maroon-200 { background-color: var(--maroon-200); }
-  .bg-maroon-300 { background-color: var(--maroon-300); }
-  .bg-maroon-400 { background-color: var(--maroon-400); }
-  .bg-maroon-500 { background-color: var(--maroon-500); }
-  .bg-maroon-600 { background-color: var(--maroon-600); }
-  .bg-maroon-700 { background-color: var(--maroon-700); }
-  .bg-maroon-800 { background-color: var(--maroon-800); }
-  .bg-maroon-900 { background-color: var(--maroon-900); }
-
-  .text-maroon-100 { color: var(--maroon-100); }
-  .text-maroon-200 { color: var(--maroon-200); }
-  .text-maroon-300 { color: var(--maroon-300); }
-  .text-maroon-400 { color: var(--maroon-400); }
-  .text-maroon-500 { color: var(--maroon-500); }
-  .text-maroon-600 { color: var(--maroon-600); }
-  .text-maroon-700 { color: var(--maroon-700); }
-  .text-maroon-800 { color: var(--maroon-800); }
-  .text-maroon-900 { color: var(--maroon-900); }
-
-  .border-maroon-100 { border-color: var(--maroon-100); }
-  .border-maroon-200 { border-color: var(--maroon-200); }
-  .border-maroon-300 { border-color: var(--maroon-300); }
-  .border-maroon-400 { border-color: var(--maroon-400); }
-  .border-maroon-500 { border-color: var(--maroon-500); }
-  .border-maroon-600 { border-color: var(--maroon-600); }
-  .border-maroon-700 { border-color: var(--maroon-700); }
-  .border-maroon-800 { border-color: var(--maroon-800); }
-  .border-maroon-900 { border-color: var(--maroon-900); }
+/* Add a dark overlay to improve text readability */
+.page-container {
+  position: relative;
 }
 
+.page-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Adjust opacity as needed */
+  z-index: -1;
+}
+
+/* Add some glass morphism to the components */
+.glass-morphism {
+  background-color: rgba(75, 31, 31, 0.7) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(242, 225, 225, 0.1);
+}

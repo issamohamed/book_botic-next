@@ -1,168 +1,152 @@
 'use client';
 
-import Groq from "groq-sdk";
+import type { BookRecommendation } from '@/types';
 
-// Initialize the client only when the API key is available
-let groq: Groq | null = null;
-if (typeof window !== 'undefined') {  // Only run on client side
-    groq = new Groq({
-        apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY || ''
-    });
-}
-
-export interface BookRecommendation {
-    title: string;
-    author: string;
-    description: string;
-    coverUrl?: string;
-}
-
-const searchExa = async (query: string, options = {}) => {
-    if (!process.env.NEXT_PUBLIC_EXA_API_KEY) {
-        throw new Error('EXA API key is missing');
-    }
-
-    const response = await fetch('https://api.exa.ai/search', {
+export async function getRandomPlotPrompt(): Promise<string> {
+    const response = await fetch('/api/groq', {
         method: 'POST',
         headers: {
-            'x-api-key': process.env.NEXT_PUBLIC_EXA_API_KEY,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            query,
-            useAutoprompt: true,
-            type: "auto",
-            numResults: 5,
-            ...options
-        })
+            messages: [{
+                role: "user",
+                content: "List a random genre with an adjective following the genre's name."
+            }],
+            temperature: 0.9,
+            max_tokens: 100,
+        }),
     });
 
     if (!response.ok) {
-        throw new Error(`Exa API error: ${response.status}`);
+        throw new Error('Failed to generate prompt');
     }
 
-    return response.json();
-};
+    const data = await response.json();
+    return data.result?.trim() || '';
+}
 
-export const getBookRecommendations = async (plotDescription: string): Promise<BookRecommendation[]> => {
-    if (!groq) {
-        throw new Error('Groq client is not initialized');
-    }
-
-    const prompt = `Based on the following plot description, recommend 5 books with similar themes or plot elements: 
-        "${plotDescription}"
-        For each book, provide the title, author, and a short, concise plot description. Format as JSON array.`;
-
-    const completion = await groq.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.7,
-        max_tokens: 1024
+export async function getBookRecommendations(plotDescription: string): Promise<BookRecommendation[]> {
+    const response = await fetch('/api/groq', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            messages: [{
+                role: "user",
+                content: `Based on the following plot description, recommend 5 books with similar themes or plot elements: "${plotDescription}". Return the response as a JSON array with each book having a title, author, and description field. Format example: [{"title": "Book Title", "author": "Author Name", "description": "Book description"}]`
+            }],
+            temperature: 0.7,
+            max_tokens: 1024,
+        }),
     });
 
-    return JSON.parse(completion.choices[0]?.message?.content || '[]');
-};
-
-export const getRandomPlotPrompt = async (): Promise<string> => {
-    if (!groq) {
-        throw new Error('Groq client is not initialized');
-    }
-
-    const prompt = "Generate a creative, safe, and engaging plot description for a potential book. Keep it between 20-50 words.";
-    
-    const completion = await groq.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.9,
-        max_tokens: 100
-    });
-
-    return completion.choices[0]?.message?.content?.trim() || '';
-};
-
-export const getBookOfTheDay = async (): Promise<BookRecommendation> => {
-    if (!groq) {
-        throw new Error('Groq client is not initialized');
+    if (!response.ok) {
+        throw new Error('Failed to get recommendations');
     }
 
     try {
-        // Get top news stories from Exa
-        const newsResponse = await searchExa("major world news events this week", {
-            category: "news",
-            numResults: 5,
-            contents: {
-                highlights: {
-                    numSentences: 2,
-                    highlightsPerUrl: 1
-                }
-            }
-        });
-
-        // Summarize news stories for Groq
-        const newsSummary = newsResponse.results
-            .map((result: any) => result.highlights?.[0]?.text || '')
-            .join(" ");
-
-        // Get book recommendation based on news
-        const prompt = `Based on these current events and themes: "${newsSummary}", 
-            recommend one book that reflects or relates to these themes. 
-            Provide the title, author, and a brief description. Format as JSON.`;
-
-        const completion = await groq.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.7,
-            max_tokens: 512
-        });
-
-        const bookData = JSON.parse(completion.choices[0]?.message?.content || '{}');
-
-        // Search for book cover image
-        const coverResponse = await searchExa(`${bookData.title} ${bookData.author} book cover`, {
-            type: "image",
-            numResults: 1,
-            contents: {
-                imageLinks: 1
-            }
-        });
-
-        if (coverResponse.results?.[0]?.imageLinks?.[0]) {
-            bookData.coverUrl = coverResponse.results[0].imageLinks[0];
+        const data = await response.json();
+        console.log('Raw Groq response:', data);
+        
+        if (!data.result) {
+            throw new Error('No result in response');
         }
 
-        return bookData;
+        const recommendations = JSON.parse(data.result);
+        console.log('Parsed recommendations:', recommendations);
+
+        if (!Array.isArray(recommendations)) {
+            throw new Error('Response is not an array');
+        }
+
+        return recommendations;
+    } catch (error) {
+        console.error('Error parsing recommendations:', error);
+        throw new Error('Failed to parse book recommendations');
+    }
+}
+
+export async function getBookOfTheDay(): Promise<BookRecommendation> {
+    try {
+        // Get current news
+        console.log('Fetching news...');
+        const newsResponse = await fetch('/api/news');
+        if (!newsResponse.ok) {
+            throw new Error('Failed to fetch news');
+        }
+
+        const newsData = await newsResponse.json();
+        console.log('News data received:', newsData);
+        
+        if (!newsData.summary) {
+            throw new Error('No news content found');
+        }
+
+        // Get book recommendation based on news
+        console.log('Getting book recommendation...');
+        const bookResponse = await fetch('/api/groq', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                messages: [{
+                    role: "user",
+                    content: `Based on these current events: "${newsData.summary}", recommend one book that reflects similar themes or topics. Return response in this JSON format: {"title": "Book Title", "author": "Author Name", "description": "Brief description of the book and how it relates to current events"}`
+                }],
+                temperature: 0.7,
+                max_tokens: 512,
+            }),
+        });
+
+        if (!bookResponse.ok) {
+            throw new Error('Failed to get book recommendation');
+        }
+
+        const bookData = await bookResponse.json();
+        console.log('Book recommendation received:', bookData);
+        const recommendation = JSON.parse(bookData.result);
+
+        // Try to get a news article image
+        const articleWithImage = newsData.articles?.find((article: any) => article.urlToImage);
+        if (articleWithImage?.urlToImage) {
+            recommendation.coverUrl = articleWithImage.urlToImage;
+        }
+
+        return recommendation;
     } catch (error) {
         console.error('Error in getBookOfTheDay:', error);
-        return {
-            title: "Default Book",
-            author: "Unknown Author",
-            description: "Unable to fetch book recommendation at this time.",
-            coverUrl: "/api/placeholder/200/300"
-        };
+        throw error;
     }
-};
+}
 
-// Speech-to-text conversion using browser's Web Speech API
-export const startSpeechRecognition = (
+export function startSpeechRecognition(
     onResult: (transcript: string) => void,
-    onError: (error: any) => void
-) => {
-    if (!('webkitSpeechRecognition' in window)) {
-        onError('Speech recognition not supported');
+    onError: (error: string | Error) => void
+): void {
+    if (typeof window === 'undefined' || !('webkitSpeechRecognition' in window)) {
+        onError('Speech recognition not supported in this browser');
         return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    try {
+        const recognition = new (window as any).webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
 
-    recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        onResult(transcript);
-    };
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            onResult(transcript);
+        };
 
-    recognition.onerror = onError;
-    recognition.start();
+        recognition.onerror = (event: any) => {
+            onError(event.error || 'Speech recognition failed');
+        };
 
-    return recognition;
-};
+        recognition.start();
+    } catch (err) {
+        onError(err instanceof Error ? err : new Error('Speech recognition failed'));
+    }
+}
