@@ -21,7 +21,6 @@ Book Botica is an AI-powered book recommendation platform that combines current 
 - Tailwind CSS
 - Groq API for AI-powered recommendations
 - NewsAPI for current events integration
-- Web Speech API for voice input
 
 ## How It Works
 The application uses Groq's language model to analyze user inputs and current news, generating contextual book recommendations. The search feature processes user-provided plot descriptions to suggest similar books, while the Book of the Day feature combines real-time news analysis with literary recommendations.
