@@ -1,6 +1,6 @@
 # Book Botica 📚
 
-Book Botica is an AI-powered book recommendation platform that combines current events with literary discovery. The app offers two main features:
+Book Botica is an AI-powered book recommendation platform that combines real media literacy with literary discovery. The app offers two main features:
 
 ## Features
 
